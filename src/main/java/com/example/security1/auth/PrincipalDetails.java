@@ -12,15 +12,33 @@ package com.example.security1.auth;
 import com.example.security1.model.User;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
-public class PrincipalDetails implements UserDetails {
+@Data
+public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private User user;
+    private Map<String, Object> attributes;
 
+    // 일반 로그인 시 사용하는 객체 (Authentication에 넣을)
     public PrincipalDetails(User user) {
         this.user = user;
+    }
+
+    // OAuth2 로그인 시 사용하는 객체 (Authentication에 넣을)
+    public PrincipalDetails(User user, Map<String, Object> attributes) {
+        this.user = user;
+        this.attributes = attributes;
+    }
+
+    // OAuth2User를 구현해서 구현해야하는 메서드 / 유저 정보를 key - value 형태로 들고 있기 때문에 Map 형태로.
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     // 해당 User의 권한을 리턴하는 곳
@@ -68,5 +86,10 @@ public class PrincipalDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 }

@@ -31,4 +31,6 @@ public class PrincipalDetailsService implements UserDetailsService {
     }
     // 리턴값은 시큐리티 session의 Authentication의 내부에 UserDetails로 담긴다
     // session(Authentication(UserDetails))
+    // 그리고 이 메서드 종료 시 @AuthenticationPrincipal 어노테이션이 만들어지고 해당 어노테이션으로
+    // 세션에 접근할 수 있게 된다.
 }

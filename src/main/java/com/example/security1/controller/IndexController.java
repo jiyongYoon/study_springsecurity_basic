@@ -1,12 +1,16 @@
 package com.example.security1.controller;
 
+import com.example.security1.auth.PrincipalDetails;
 import com.example.security1.model.User;
 import com.example.security1.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +23,33 @@ public class IndexController {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @GetMapping("/test/login")
+    public @ResponseBody String testLogin(Authentication authentication,
+        @AuthenticationPrincipal PrincipalDetails userDetails2) { //@AuthenticationPrincipal를 통해서 Session 정보에 접근 가능
+        // 원래는 UserDetails 오브젝트로 받아야 하는데, 현재 프로젝트에서는 PrincipalDetails가 UserDetails 를 상속했기 때문에 받기 가능
+
+        System.out.println("/test/login =============");
+
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal(); // Object 객체를 다운캐스팅
+        System.out.println("principalDetails.getUser(): " + principalDetails.getUser());
+        System.out.println("userDetails.getUser: " + userDetails2.getUser()); // 두 내용이 같음
+
+        return "세션 정보 확인하기";
+    }
+
+    @GetMapping("/test/oauth/login")
+    public @ResponseBody String testOAuthLogin(Authentication authentication,
+        @AuthenticationPrincipal OAuth2User oauth2User) { //@AuthenticationPrincipal를 통해서 Session 정보에 접근 가능
+
+        System.out.println("/test/oauth/login =============");
+
+        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        System.out.println("OAuth2User.getAttributes(): " + oAuth2User.getAttributes());
+        System.out.println("oauth2User.getAttributes()r: " + oauth2User.getAttributes()); // 두 내용이 같음
+
+        return "OAuth 세션 정보 확인하기";
+    }
+
     // localhost:8080/ , localhost:8080
     @GetMapping({"", "/"})
     public @ResponseBody String index() {
@@ -27,8 +58,11 @@ public class IndexController {
         return "index";
     }
 
+    // PrincipalDetails에서 UserDetails랑 OAuth2User를 다 구현하고 나니
+    // 일반 로그인, OAuth2 로그인 둘 다 처리가 가능해짐
     @GetMapping("/user")
-    public @ResponseBody String user() {
+    public @ResponseBody String user(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        System.out.println("principalDetails: " + principalDetails.getUser());
         return "user";
     }
 
